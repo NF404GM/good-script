@@ -28,7 +28,8 @@ const DEFAULT_SETTINGS: Settings = {
     enableGestures: false,
     enableVoiceScroll: false,
     editorTextColor: '#ffffff',
-    editorMood: 'calm',
+    editorMood: 'creator',
+    playbackDirection: 'forward',
 };
 
 export const Prompter: React.FC<PrompterProps> = ({
@@ -90,22 +91,22 @@ export const Prompter: React.FC<PrompterProps> = ({
         };
     }, [handleActivity]);
 
-    const updateSettings = (newSettings: Partial<Settings>) => {
+    const updateSettings = useCallback((newSettings: Partial<Settings>) => {
         setSettings(prev => {
             const updated = { ...prev, ...newSettings };
             externalSettingsChange?.(newSettings);
             return updated;
         });
-    };
+    }, [externalSettingsChange]);
 
-    const resetScroll = () => {
+    const resetScroll = useCallback(() => {
         if (scrollContainerRef.current) {
             scrollContainerRef.current.scrollTop = 0;
             scrollAccumulatorRef.current = 0;
             updateSettings({ isPlaying: false });
             setIsControlsVisible(true);
         }
-    };
+    }, [updateSettings]);
 
     const getThemeClasses = (theme: Theme) => {
         switch (theme) {
@@ -174,16 +175,20 @@ export const Prompter: React.FC<PrompterProps> = ({
                     }
                 }
 
-                const pixelsToScroll = targetSpeed * (deltaTime / 16.67);
+                const directionMultiplier = settings.playbackDirection === 'reverse' ? -1 : 1;
+                const pixelsToScroll = targetSpeed * (deltaTime / 16.67) * directionMultiplier;
                 scrollAccumulatorRef.current += pixelsToScroll;
-                const integerMove = Math.floor(scrollAccumulatorRef.current);
+                const integerMove = Math.trunc(scrollAccumulatorRef.current);
 
-                if (integerMove > 0) {
+                if (Math.abs(integerMove) > 0) {
                     container.scrollTop += integerMove;
                     scrollAccumulatorRef.current -= integerMove;
                 }
 
-                if (scrollHeight - (scrollTop + clientHeight) <= 1) {
+                if (settings.playbackDirection === 'forward' && scrollHeight - (scrollTop + clientHeight) <= 1) {
+                    updateSettings({ isPlaying: false });
+                    setIsControlsVisible(true);
+                } else if (settings.playbackDirection === 'reverse' && scrollTop <= 0) {
                     updateSettings({ isPlaying: false });
                     setIsControlsVisible(true);
                 }
@@ -195,7 +200,7 @@ export const Prompter: React.FC<PrompterProps> = ({
         return () => {
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
-    }, [settings.isPlaying, settings.scrollSpeed, settings.useSmartPacing]);
+    }, [settings.isPlaying, settings.scrollSpeed, settings.useSmartPacing, settings.playbackDirection, updateSettings]);
 
     // Process HTML for timestamp markers
     const processedHtml = useMemo(() => {
@@ -246,16 +251,17 @@ export const Prompter: React.FC<PrompterProps> = ({
             >
                 <div className="h-[50vh]" />
 
+                {/* Studio-based font scale for Giant Font mode */}
                 <div
                     className="max-w-[90%] md:max-w-[1400px] mx-auto transition-all duration-300 ease-in-out outline-none"
                     style={{
-                        fontSize: `${settings.fontSize}px`,
+                        fontSize: `${settings.fontSize * (settings.editorMood === 'speech' ? 1.5 : 1)}px`,
                         paddingLeft: `${settings.paddingX}%`,
                         paddingRight: `${settings.paddingX}%`,
                         transform: settings.isMirrored ? 'scaleX(-1)' : 'none',
                         fontFamily: getFontFamily(settings.fontFamily),
-                        fontWeight: 700,
-                        lineHeight: 1.5,
+                        fontWeight: settings.editorMood === 'speech' ? 900 : 700,
+                        lineHeight: settings.editorMood === 'speech' ? 1.3 : 1.5,
                         textAlign: settings.isMirrored ? 'right' : 'left',
                         color: settings.editorTextColor,
                     }}

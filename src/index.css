@@ -171,3 +171,55 @@
   background: var(--color-primary);
   color: white;
 }
+
+/* Screenplay Formatting */
+.s-slug {
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.s-action {
+  margin-bottom: 1rem !important;
+}
+
+.s-character {
+  margin-left: 35% !important;
+  margin-right: 15% !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0rem !important;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.s-dialogue {
+  margin-left: 20% !important;
+  margin-right: 20% !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.s-parenthetical {
+  margin-left: 30% !important;
+  margin-right: 30% !important;
+  margin-bottom: 0rem !important;
+}
+
+.s-transition {
+  margin-left: auto;
+  width: 25%;
+  text-align: right;
+  text-transform: uppercase;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Character Bible Highlighting */
+.highlight-focused {
+  background: rgba(255, 251, 0, 0.08) !important;
+  box-shadow: -4px 0 0 #ef4444 !important;
+  /* Red indicator */
+  padding-left: 0.5rem !important;
+  border-radius: 0 4px 4px 0;
+  transition: all 0.3s ease;
+}

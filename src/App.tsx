@@ -4,7 +4,7 @@ import { StudioEditor } from '~/src/components/StudioEditor';
 import { Prompter } from '~/src/components/Prompter';
 import { RemoteClient } from '~/src/components/RemoteClient';
 import { InstallPrompt } from '~/src/components/InstallPrompt';
-import { AppMode, Script, Settings } from '~/src/types';
+import { AppMode, Script, Settings, Character } from '~/src/types';
 import { useScriptSync } from '~/src/hooks/useScriptSync';
 
 // Default settings with Deep Navy theme
@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS: Settings = {
     enableGestures: false,
     enableVoiceScroll: false,
     editorTextColor: '#ffffff',
-    editorMood: 'calm',
+    editorMood: 'creator',
 };
 
 const DEFAULT_CONTENT = `<h1>Welcome to GOOD SCRIPT V2</h1>
@@ -83,13 +83,15 @@ const MainApp: React.FC = () => {
         localStorage.setItem('goodscript_v2_settings', JSON.stringify(settings));
     }, [settings]);
 
-    const handleSaveScript = async (title: string) => {
+    const handleSaveScript = async (title: string, characters?: Character[]) => {
+        const existingScript = scripts.find(s => s.id === currentScriptId);
         const newScript: Script = {
             id: currentScriptId || crypto.randomUUID(),
             title: title || 'Untitled Script',
             content: scriptContent,
             lastModified: Date.now(),
-            createdAt: currentScriptId ? scripts.find(s => s.id === currentScriptId)?.createdAt : Date.now(),
+            createdAt: existingScript ? existingScript.createdAt : Date.now(),
+            characters: characters || existingScript?.characters || [],
         };
 
         await saveScript(newScript);
@@ -120,6 +122,20 @@ const MainApp: React.FC = () => {
         setScriptContent('');
     };
 
+    const handleImportScript = async (imported: Partial<Script>) => {
+        const newScript: Script = {
+            id: crypto.randomUUID(),
+            title: imported.title || 'Imported Script',
+            content: imported.content || '',
+            lastModified: Date.now(),
+            createdAt: Date.now(),
+        };
+
+        await saveScript(newScript);
+        setCurrentScriptId(newScript.id);
+        setScriptContent(newScript.content);
+    };
+
     const handleSettingsChange = (newSettings: Partial<Settings>) => {
         setSettings(prev => ({ ...prev, ...newSettings }));
     };
@@ -146,6 +162,7 @@ const MainApp: React.FC = () => {
                             onLoad={handleLoadScript}
                             onDelete={handleDeleteScript}
                             onNew={handleNewScript}
+                            onImport={handleImportScript}
                             settings={settings}
                             onSettingsChange={handleSettingsChange}
                         />
@@ -153,12 +170,27 @@ const MainApp: React.FC = () => {
                 ) : (
                     <motion.div
                         key="prompter"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="h-full w-full"
+                        initial={{ scaleY: 0, opacity: 0 }}
+                        animate={{ scaleY: 1, opacity: 1 }}
+                        exit={{ scaleY: 0, opacity: 0 }}
+                        transition={{
+                            scaleY: { type: "spring", stiffness: 200, damping: 20 },
+                            opacity: { duration: 0.15 }
+                        }}
+                        style={{ originY: 0.5, transformOrigin: "center" }}
+                        className="h-full w-full bg-black"
                     >
+                        {/* TV scan line effect overlay */}
+                        <motion.div
+                            initial={{ opacity: 1 }}
+                            animate={{ opacity: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="absolute inset-0 pointer-events-none z-50 bg-gradient-to-b from-white/5 via-transparent to-white/5"
+                            style={{
+                                backgroundSize: "100% 4px",
+                                backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 2px)"
+                            }}
+                        />
                         <Prompter
                             text={scriptContent}
                             onExit={() => setMode(AppMode.EDITOR)}

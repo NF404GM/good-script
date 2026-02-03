@@ -53,8 +53,30 @@ export const ControlBar: React.FC<ControlBarProps> = ({
                     </button>
                 </div>
 
-                {/* Play/Pause Button */}
-                <div className="px-3">
+                {/* Play/Pause & Direction Button */}
+                <div className="flex items-center gap-2 px-3">
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => updateSettings({
+                            playbackDirection: settings.playbackDirection === 'forward' ? 'reverse' : 'forward'
+                        })}
+                        className={cn(
+                            "flex items-center justify-center w-10 h-10 rounded-full border transition-all",
+                            settings.playbackDirection === 'reverse'
+                                ? 'bg-primary/20 border-primary text-primary'
+                                : 'bg-transparent border-border text-muted-foreground hover:text-white hover:border-white/20'
+                        )}
+                        title={`Scroll: ${settings.playbackDirection === 'forward' ? 'Down' : 'Up'}`}
+                    >
+                        <motion.div
+                            animate={{ rotate: settings.playbackDirection === 'reverse' ? 180 : 0 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        >
+                            <Plus size={18} className="rotate-45" /> {/* Using Plus rotated for a 'direction' vibe or just an arrow */}
+                        </motion.div>
+                    </motion.button>
+
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}

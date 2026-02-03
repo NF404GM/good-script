@@ -9,6 +9,28 @@ export enum AppMode {
 export type Theme = 'dark' | 'light' | 'high-contrast' | 'broadcast';
 export type FontFamily = 'sans' | 'serif' | 'mono';
 
+// Character profile for the Character Bible
+export interface Character {
+    id: string;
+    name: string;
+    description: string;
+    traits: string[];
+    color: string;
+    age?: string;
+    role?: string; // Main, Supporting, etc.
+}
+
+// Scene for the Kanban board
+export interface Scene {
+    id: string;
+    title: string;
+    content: string; // HTML for this specific scene
+    summary?: string;
+    characters?: Character[]; // Characters present in this scene
+    type?: 'action' | 'dialogue' | 'transition' | 'setup'; // For color-coding
+    status?: 'draft' | 'final' | 'review';
+}
+
 // Script data structure (Supabase compatible)
 export interface Script {
     id: string;
@@ -17,9 +39,12 @@ export interface Script {
     lastModified: number;
     userId?: string; // For Supabase auth
     createdAt?: number;
+    characters?: Character[]; // New: Linked characters
+    tags?: string[]; // Genre, status, etc.
 }
 
-export type Mood = 'calm' | 'confident' | 'urgent' | 'reflect' | 'e-ink';
+export type StudioType = 'creator' | 'speech' | 'custom' | 'e-ink';
+export type Mood = StudioType; // Maintain legacy name for internal consistency if needed, but we'll use StudioType
 
 // Teleprompter settings
 export interface Settings {
@@ -36,6 +61,7 @@ export interface Settings {
     enableVoiceScroll: boolean; // Phase C: Voice control
     editorTextColor: string;    // Custom color for script text
     editorMood: Mood;           // Emotional context for the editor
+    playbackDirection: 'forward' | 'reverse'; // Direction of scrolling
 }
 
 // Alias for backwards compatibility
@@ -46,8 +72,8 @@ export interface ScriptData extends Script { }
 
 // PeerJS remote control messages
 export interface PeerMessage {
-    type: 'SET_PLAYING' | 'SET_SPEED' | 'RESET_SCROLL' | 'SET_FONT_SIZE';
-    payload: boolean | number;
+    type: 'SET_PLAYING' | 'SET_SPEED' | 'RESET_SCROLL' | 'SET_FONT_SIZE' | 'SET_DIRECTION';
+    payload: boolean | number | string;
     timestamp: number;
 }
 

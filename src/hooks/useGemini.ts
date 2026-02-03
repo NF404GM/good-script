@@ -12,6 +12,7 @@ export interface UseGeminiReturn {
     improveScript: (text: string) => Promise<string>;
     refineSelection: (selectedText: string) => Promise<string>;
     autoPaceScript: (text: string, targetDuration: string) => Promise<string>;
+    generateCharacterBio: (name: string, context?: string) => Promise<string>;
     isLoading: boolean;
     error: string | null;
 }
@@ -138,11 +139,39 @@ export function useGemini(): UseGeminiReturn {
         }
     }, []);
 
+    const generateCharacterBio = useCallback(async (name: string, context?: string): Promise<string> => {
+        if (!ai) throw new Error("API Key is missing");
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await ai.models.generateContent({
+                model: MODEL_NAME,
+                contents: `Generate a short, compelling character biography for a character named "${name}". 
+                Include their role in a script, their key motivation, and two personality traits.
+                Keep it under 50 words.
+                
+                ${context ? `Context about the script: ${context}` : ''}`,
+                config: {
+                    systemInstruction: "You are a creative writing assistant for screenwriters.",
+                }
+            });
+
+            return response.text?.trim() || "Failed to generate bio.";
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to generate bio");
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     return {
         generateScript,
         improveScript,
         refineSelection,
         autoPaceScript,
+        generateCharacterBio,
         isLoading,
         error,
     };

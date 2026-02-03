@@ -13,6 +13,8 @@ const DEFAULT_SETTINGS: Settings = {
     enableWebcam: false,
     enableGestures: false,
     enableVoiceScroll: false,
+    editorMood: 'creator',
+    editorTextColor: '#d4d4d8',
 };
 
 export interface UseTeleprompterReturn {
