@@ -1,0 +1,7 @@
+{
+  "name": "GOOD SCRIPT",
+  "description": "A professional-grade teleprompter application with AI-powered script generation and editing capabilities.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
